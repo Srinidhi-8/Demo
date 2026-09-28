@@ -1,90 +1,27 @@
 const express = require("express");
-const session = require("express-session");
 const cookieParser = require("cookie-parser");
-const path = require("path");
 
 const app = express();
-const PORT = 3000;
 
-app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
-app.use(
-    session({
-        secret: "week8-secret",
-        resave: false,
-        saveUninitialized: false
-    })
-);
-
-app.use(express.static(path.join(__dirname, "views")));
-
-const USER = {
-    username: "student",
-    password: "1234"
-};
-
-// Home
-app.get("/", (req, res) => {
-    res.sendFile(path.join(__dirname, "views", "home.html"));
+// Create Cookie
+app.get("/create-cookie", (req, res) => {
+    res.cookie("username", "Srinidhi");
+    res.send("Cookie created successfully!");
 });
 
-// Login page
-app.get("/login", (req, res) => {
-    res.sendFile(path.join(__dirname, "views", "login.html"));
-});
+// Read Cookie
+app.get("/read-cookie", (req, res) => {
+    const username = req.cookies.username;
 
-// Login
-app.post("/login", (req, res) => {
-    const { username, password } = req.body;
-
-    if (username === USER.username && password === USER.password) {
-
-        // Create cookie
-        res.cookie("username", username);
-
-        // Create session
-        req.session.user = username;
-
-        res.redirect("/dashboard");
-
+    if (username) {
+        res.send("Cookie value: " + username);
     } else {
-        res.send("Invalid username or password");
+        res.send("Cookie not found!");
     }
 });
 
-// Protected route
-app.get("/dashboard", (req, res) => {
-
-    if (!req.session.user) {
-        return res.redirect("/login");
-    }
-
-    res.sendFile(
-        path.join(__dirname, "views", "dashboard.html")
-    );
-});
-
-// Read cookie
-app.get("/cookie", (req, res) => {
-
-    if (req.cookies.username) {
-        res.send("Cookie value: " + req.cookies.username);
-    } else {
-        res.send("Cookie not found");
-    }
-});
-
-// Logout
-app.get("/logout", (req, res) => {
-
-    res.clearCookie("username");
-
-    req.session.destroy(() => {
-        res.redirect("/login");
-    });
-});
-
-app.listen(PORT, () => {
-    console.log(`Server running at http://localhost:${PORT}`);
+app.listen(3000, () => {
+    console.log("Server running at http://localhost:3000");
 });
